@@ -1,7 +1,12 @@
 package lms;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 public class LMS {
 
@@ -11,39 +16,107 @@ public class LMS {
 
 
     public void addBook(Book book) {
+        for (Book b : books) {
+            if (b.getTitle().equals(book.getTitle())) {
+                return;
+            }
+        }
         books.add(book);
     }
 
-    public boolean removeBook(Book book) {
-        return books.remove(book);
-    }
-
-    public boolean borrowBook(Book book, Student student) {
-        boolean borrowed = false;
-        if (books.contains(book)) {
-            borrowedBooks.add(new BorrowedBook(book, student));
-            borrowed = true;
-        }
-        return borrowed;
-    }
-
-    public boolean returnBook(Book book) {
-        boolean returned = false;
-        for (BorrowedBook borrowedBook : borrowedBooks) {
-            if (borrowedBook.getBook().equals(book)) {
-                borrowedBooks.remove(borrowedBook);
-                returned = true;
-                break;
+    public void removeBook(Book book) {
+        for (Book b : books) {
+            if (b.getTitle().equals(book.getTitle())) {
+                books.remove(b);
+                return;
             }
         }
-        return returned;
+    }
+
+    public void borrowBook(Book book, Student student) {
+        for (Book b : books) {
+            if (b.getTitle().equals(book.getTitle())) {
+                for (BorrowedBook borrowedBook : borrowedBooks) {
+                    if (borrowedBook.getBook().getTitle().equals(book.getTitle())) {
+                        continue;
+                    }
+                }
+                borrowedBooks.add(new BorrowedBook(b, student));
+                return;
+            }
+        }
+    }
+
+    public void returnBook(Book book) {
+        for (BorrowedBook borrowedBook : borrowedBooks) {
+            if (borrowedBook.getBook().getTitle().equals(book.getTitle())) {
+                borrowedBooks.remove(borrowedBook);
+                return;
+            }
+        }
     }
 
     public void saveState(String filePath) {
-        // TODO must be implemented
+        try {
+            PrintWriter writer = new PrintWriter(filePath, "UTF-8");
+
+            // Write book information
+            for (Book book : books) {
+                writer.println(book.getTitle() + "," + book.getAuthor());
+            }
+
+            // Write an empty line
+            writer.println();
+
+            // Write borrowed book information
+            for (BorrowedBook borrowedBook : borrowedBooks) {
+                writer.println(borrowedBook.getBook().getTitle() + "," + borrowedBook.getBook().getAuthor() + "," + borrowedBook.getStudent().getName() + "," + borrowedBook.getStudent().getSurname() + "," + borrowedBook.getStudent().getPersonalNumber());
+            }
+
+            writer.close();
+            System.out.println("Saved");
+        } catch (IOException e) {
+            System.out.println("An error occurred while saving the state.");
+            e.printStackTrace();
+        }
     }
 
     public void loadState(String filePath) {
-        // TODO must be implemented
+        try {
+            File file = new File(filePath);
+            Scanner scanner = new Scanner(file);
+
+            // Clear current state
+            students.clear();
+            books.clear();
+            borrowedBooks.clear();
+
+            // Load book information
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                if (line.isEmpty()) break; // Empty line indicates end of books
+
+                String[] parts = line.split(",");
+                books.add(new Book(parts[0], parts[1]));
+            }
+
+            // Load borrowed book information
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                if (line.isEmpty()) break; // Empty line indicates end of borrowed books
+
+                String[] parts = line.split(",");
+                Book book = new Book(parts[0], parts[1]); // We don't have full student info here
+                Student student = new Student(parts[2], parts[3], parts[4]); // We don't have full student info here
+                borrowedBooks.add(new BorrowedBook(book, student));
+            }
+
+            scanner.close();
+
+            System.out.println("Loaded");
+        } catch (FileNotFoundException e) {
+            System.out.println("An error occurred while loading the state.");
+            e.printStackTrace();
+        }
     }
 }

@@ -4,6 +4,7 @@ public class LMSTester {
     public static void main(String[] args) {
         LMS iliauniLibrary = new LMS();
 
+
         Book lor = new Book("Lord of the rings", "tolkien");
         Book oop = new Book("OOP", "paata gogisvhili");
         iliauniLibrary.addBook(lor);
@@ -15,12 +16,19 @@ public class LMSTester {
         Student maka = new Student("Maka", "Lobjanidze", "3421325");
         iliauniLibrary.borrowBook(oop, maka);
 
-        iliauniLibrary.returnBook(lor);
 
+        iliauniLibrary.saveState("libraryState.txt");
         for (BorrowedBook borrowedBook : iliauniLibrary.borrowedBooks) {
-            System.out.println(borrowedBook.getBook().getTitle() + " " + borrowedBook.getBook().getAuthor());
+            System.out.println(borrowedBook.getBook().getTitle() + " is borrowed by " + borrowedBook.getStudent().getName());
         }
-//        iliauniLibrary.saveState("libraryState.txt");
+
+        iliauniLibrary.loadState("libraryState.txt");
+        iliauniLibrary.returnBook(lor);
+        for (BorrowedBook borrowedBook : iliauniLibrary.borrowedBooks) {
+            System.out.println(borrowedBook.getBook().getTitle() + " is borrowed by " + borrowedBook.getStudent().getName());
+        }
+
+
 
     }
 }

@@ -1,10 +1,7 @@
 package lms;
 
 public class Student {
-    String name, surname, personalNumber;
-
-    public Student() {
-    }
+    private String name, surname, personalNumber;
 
     public Student(String name, String surname, String personalNumber) {
         this.name = name;
